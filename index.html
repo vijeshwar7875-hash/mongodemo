@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+    <title>Student Management</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+
+<body ng-controller="myCtrl">
+
+    <h2>Student Management</h2>
+
+    <input type="text" ng-model="student.name" placeholder="Name">
+    <input type="number" ng-model="student.age" placeholder="Age">
+
+    <button ng-click="addStudent()">Add Student</button>
+    <button ng-click="loadStudents()">Load Students</button>
+
+    <p>{{message}}</p>
+
+    <table border="1" cellpadding="10">
+        <tr>
+            <th>Name</th>
+            <th>Age</th>
+        </tr>
+
+        <tr ng-repeat="s in students">
+            <td>{{s.name}}</td>
+            <td>{{s.age}}</td>
+        </tr>
+    </table>
+
+    <script>
+        var app = angular.module("myApp", []);
+
+        app.controller("myCtrl", function($scope, $http) {
+
+            $scope.students = [];
+            $scope.student = {};
+            $scope.message = "";
+
+            $scope.loadStudents = function() {
+                $http.get("/students")
+                .then(function(response) {
+                    $scope.students = response.data;
+                    $scope.message = "Students loaded!";
+                })
+                .catch(function(error) {
+                    $scope.message = "Error loading students";
+                    console.log(error);
+                });
+            };
+
+            $scope.addStudent = function() {
+                if (!$scope.student.name ||
+                    $scope.student.age == null) {
+                    $scope.message = "Enter name and age";
+                    return;
+                }
+
+                $http.post("/students", $scope.student)
+                .then(function(response) {
+                    $scope.student = {};
+                    $scope.loadStudents();
+                })
+                .catch(function(error) {
+                    $scope.message = "Error adding student";
+                    console.log(error);
+                });
+            };
+
+            $scope.loadStudents();
+        });
+    </script>
+
+</body>
+</html>
